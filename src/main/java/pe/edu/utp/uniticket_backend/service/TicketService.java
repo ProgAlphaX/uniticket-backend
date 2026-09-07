@@ -5,6 +5,9 @@ import pe.edu.utp.uniticket_backend.dto.TicketCreateDTO;
 import pe.edu.utp.uniticket_backend.dto.TicketDTO;
 import pe.edu.utp.uniticket_backend.model.Ticket;
 
+import pe.edu.utp.uniticket_backend.exception.ResourceNotFoundException;
+import pe.edu.utp.uniticket_backend.dto.TicketDetalleDTO;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +54,35 @@ public class TicketService {
                 ticket.getSDescripcion(),
                 ticket.getSEstado(),
                 ticket.getDFecha_Creacion()
+        );
+    }
+
+
+    public List<TicketDTO> listarTickets(String estado, String tipo, Long usuarioId) {
+        return ticketsPorId.values().stream()
+                .filter(t -> estado == null || t.getSEstado().equalsIgnoreCase(estado))
+                .filter(t -> tipo == null || t.getSTipo().equalsIgnoreCase(tipo))
+                .filter(t -> usuarioId == null || t.getNId_Usuario().equals(usuarioId))
+                .map(this::mapearADTO)
+                .toList();
+    }
+
+    public TicketDetalleDTO obtenerTicketPorId(Long id) {
+        Ticket ticket = ticketsPorId.get(id);
+        if (ticket == null) {
+            throw new ResourceNotFoundException("Ticket no encontrado con ID: " + id);
+        }
+        // De momento la resolución va como null hasta que se implemente el PUT de resolución
+        return new TicketDetalleDTO(
+                ticket.getNId_Ticket(),
+                ticket.getSNum_Ticket(),
+                ticket.getNId_Usuario(),
+                ticket.getSTipo(),
+                ticket.getSAsunto(),
+                ticket.getSDescripcion(),
+                ticket.getSEstado(),
+                ticket.getDFecha_Creacion(),
+                null
         );
     }
 }
