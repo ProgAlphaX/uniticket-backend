@@ -1,41 +1,47 @@
 package pe.edu.utp.uniticket_backend.controller;
 
-import java.util.Collections;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import pe.edu.utp.uniticket_backend.service.UsuarioService;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UsuarioController.class)
+@SpringBootTest
 class UsuarioControllerTest {
-
     @Autowired
+    private UsuarioController usuarioController;
+
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private UsuarioService usuarioService;
-
-    @Test
-    public void testListarUsuarios() throws Exception {
-        when(usuarioService.listarUsuarios(null)).thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/api/usuarios"))
-                .andExpect(status().isOk());
+    private MockMvc obtenerMockMvc() {
+        if (mockMvc == null) {
+            mockMvc = MockMvcBuilders.standaloneSetup(usuarioController).build();
+        }
+        return mockMvc;
     }
 
     @Test
-    public void testBuscarPorNombre() throws Exception {
-        when(usuarioService.buscarPorNombre("selia")).thenReturn(Collections.emptyList());
+    void listarUsuarios_retornaTodos() throws Exception {
+        obtenerMockMvc().perform(get("/api/usuarios"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3));
+    }
 
-        mockMvc.perform(get("/api/usuarios/buscar")
-                .param("nombre", "selia"))
-                .andExpect(status().isOk());
+    @Test
+    void buscarPorNombre_conCoincidencia_retornaUsuarios() throws Exception {
+        obtenerMockMvc().perform(get("/api/usuarios/buscar").param("nombre", "ana"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void buscarPorNombre_sinCoincidencia_retornaListaVacia() throws Exception {
+        obtenerMockMvc().perform(get("/api/usuarios/buscar").param("nombre", "zzz"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

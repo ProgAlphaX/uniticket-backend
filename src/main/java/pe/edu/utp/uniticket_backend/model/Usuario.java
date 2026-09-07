@@ -1,16 +1,9 @@
 package pe.edu.utp.uniticket_backend.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "usuarios")
 public class Usuario {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long nId_Usuario;
-
     private String sNombreCompleto;
     private String sEmail;
     private String sDni;
@@ -69,9 +62,7 @@ public class Usuario {
         this.sDni = sDni;
     }
 
-    public String getSTelefono() {
-        return sTelefono;
-    }
+    public String getSTelefono() { return sTelefono; }
 
     public void setSTelefono(String sTelefono) {
         this.sTelefono = sTelefono;
