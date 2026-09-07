@@ -3,18 +3,17 @@ package pe.edu.utp.uniticket_backend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pe.edu.utp.uniticket_backend.dto.TicketCreateDTO;
 import pe.edu.utp.uniticket_backend.dto.TicketDTO;
+import pe.edu.utp.uniticket_backend.dto.TicketDetalleDTO;
 import pe.edu.utp.uniticket_backend.service.TicketService;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import pe.edu.utp.uniticket_backend.dto.TicketDetalleDTO;
 import java.util.List;
 
 @RestController
@@ -22,9 +21,7 @@ import java.util.List;
 public class TicketController {
     private final TicketService ticketService;
 
-    public TicketController(TicketService ticketService) {
-        this.ticketService = ticketService;
-    }
+    public TicketController(TicketService ticketService) { this.ticketService = ticketService; }
 
     @PostMapping
     public ResponseEntity<TicketDTO> crearTicket(@Valid @RequestBody TicketCreateDTO datos) {
@@ -32,19 +29,9 @@ public class TicketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketCreado);
     }
 
-
     @GetMapping
-    public ResponseEntity<List<TicketDTO>> listarTickets(
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) Long usuarioId) {
-        
-        
-        if (tipo != null && tipo.equals("NOEXISTE")) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<TicketDTO> lista = ticketService.listarTickets(estado, tipo, usuarioId);
+    public ResponseEntity<List<TicketDTO>> listarTickets() {
+        List<TicketDTO> lista = ticketService.listarTickets();
         return ResponseEntity.ok(lista);
     }
 

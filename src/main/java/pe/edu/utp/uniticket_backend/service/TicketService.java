@@ -18,9 +18,16 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TicketService {
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
 
-    private final Map<Long, Ticket> ticketsPorId = new ConcurrentHashMap<>();
-    private final AtomicLong secuenciaId = new AtomicLong(0);
-    private final AtomicLong secuenciaNumTicket = new AtomicLong(0);
+    private final Map<Long, Ticket> ticketsPorId = new ConcurrentHashMap<>(Map.of(
+            1L, new Ticket(1L, "SOL-0001", 1L, "CERTIFICADO", "Constancia de matrícula",
+                    "Necesito la constancia para un trámite bancario", "PENDIENTE", LocalDateTime.now()),
+            2L, new Ticket(2L, "SOL-0002", 2L, "CITA_TUTOR", "Cita con tutor de ciclo",
+                    "Quisiera coordinar una cita para revisar mi avance académico", "EN_PROCESO", LocalDateTime.now()),
+            3L, new Ticket(3L, "SOL-0003", 3L, "PENSION", "Consulta de pensión",
+                    "Necesito el detalle de mi pensión del ciclo actual", "RESUELTO", LocalDateTime.now())
+    ));
+    private final AtomicLong secuenciaId = new AtomicLong(3);
+    private final AtomicLong secuenciaNumTicket = new AtomicLong(3);
 
     public TicketDTO crearTicket(TicketCreateDTO datos) {
         long nId_Ticket = secuenciaId.incrementAndGet();
@@ -57,12 +64,8 @@ public class TicketService {
         );
     }
 
-
-    public List<TicketDTO> listarTickets(String estado, String tipo, Long usuarioId) {
+    public List<TicketDTO> listarTickets() {
         return ticketsPorId.values().stream()
-                .filter(t -> estado == null || t.getSEstado().equalsIgnoreCase(estado))
-                .filter(t -> tipo == null || t.getSTipo().equalsIgnoreCase(tipo))
-                .filter(t -> usuarioId == null || t.getNId_Usuario().equals(usuarioId))
                 .map(this::mapearADTO)
                 .toList();
     }
@@ -72,7 +75,6 @@ public class TicketService {
         if (ticket == null) {
             throw new ResourceNotFoundException("Ticket no encontrado con ID: " + id);
         }
-        // De momento la resolución va como null hasta que se implemente el PUT de resolución
         return new TicketDetalleDTO(
                 ticket.getNId_Ticket(),
                 ticket.getSNum_Ticket(),
