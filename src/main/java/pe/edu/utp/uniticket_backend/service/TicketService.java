@@ -13,15 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
+import pe.edu.utp.uniticket_backend.dto.TicketUpdateDTO;
 @Service
 public class TicketService {
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
+    private static final String ESTADO_RESUELTO = "RESUELTO";
 
     private final Map<Long, Ticket> ticketsPorId = new ConcurrentHashMap<>();
     private final AtomicLong secuenciaId = new AtomicLong(0);
     private final AtomicLong secuenciaNumTicket = new AtomicLong(0);
+    // Para el PUT de Tickets
+    private final Map<Long, TicketDetalleDTO.ResolucionDTO> resolucionesPorTicket =
+            new ConcurrentHashMap<>();
 
+    private final AtomicLong secuenciaResolucion = new AtomicLong(0);
+    // Cierre
     public TicketDTO crearTicket(TicketCreateDTO datos) {
         long nId_Ticket = secuenciaId.incrementAndGet();
         String sNum_Ticket = generarNumTicket();
@@ -73,6 +79,11 @@ public class TicketService {
             throw new ResourceNotFoundException("Ticket no encontrado con ID: " + id);
         }
         // De momento la resolución va como null hasta que se implemente el PUT de resolución
+        
+        // Implementando resolución para el proceso de PUT
+        TicketDetalleDTO.ResolucionDTO resolucion =
+        		resolucionesPorTicket.get(id);
+        
         return new TicketDetalleDTO(
                 ticket.getNId_Ticket(),
                 ticket.getSNum_Ticket(),
@@ -85,4 +96,40 @@ public class TicketService {
                 null
         );
     }
+    
+    // Para el PUT de Tickets
+    public TicketDetalleDTO resolverTicket(Long id, TicketUpdateDTO datos) {
+
+        Ticket ticket = ticketsPorId.get(id);
+
+        if (ticket == null) {
+            throw new ResourceNotFoundException(
+                    "Ticket no encontrado con ID: " + id);
+        }
+
+        ticket.setSEstado(ESTADO_RESUELTO);
+
+        TicketDetalleDTO.ResolucionDTO resolucion =
+                new TicketDetalleDTO.ResolucionDTO(
+                        secuenciaResolucion.incrementAndGet(),
+                        datos.nId_Admin(),
+                        datos.sTextoRespuesta(),
+                        LocalDateTime.now()
+                );
+
+        resolucionesPorTicket.put(id, resolucion);
+
+        return new TicketDetalleDTO(
+                ticket.getNId_Ticket(),
+                ticket.getSNum_Ticket(),
+                ticket.getNId_Usuario(),
+                ticket.getSTipo(),
+                ticket.getSAsunto(),
+                ticket.getSDescripcion(),
+                ticket.getSEstado(),
+                ticket.getDFecha_Creacion(),
+                resolucion
+        );
+    }
+    // CIERRE
 }
