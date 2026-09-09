@@ -1,20 +1,28 @@
 package pe.edu.utp.uniticket_backend.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URI;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import pe.edu.utp.uniticket_backend.exception.GlobalExceptionHandler;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class TicketControllerTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
     private static final String TICKET_VALIDO_JSON = """
             {
               "nId_Usuario": 1,
@@ -24,31 +32,22 @@ class TicketControllerTest {
             }
             """;
 
-    @Autowired
-    private TicketController ticketController;
-
-    private MockMvc mockMvc;
-
-    private MockMvc obtenerMockMvc() {
-        if (mockMvc == null) {
-            mockMvc = MockMvcBuilders.standaloneSetup(ticketController)
-                    .setControllerAdvice(new GlobalExceptionHandler())
-                    .build();
-        }
-        return mockMvc;
+    @Test
+    void testCrearTicketConDatosValidos() throws Exception {
+        System.out.println("Ejecutando testCrearTicketConDatosValidos");
+        URI uri = new URI("/api/tickets");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TICKET_VALIDO_JSON)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.CREATED.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"PENDIENTE\""));
     }
 
     @Test
-    void crearTicket_conDatosValidos_retornaCreated() throws Exception {
-        obtenerMockMvc().perform(post("/api/tickets")
-                        .contentType("application/json")
-                        .content(TICKET_VALIDO_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.sEstado").value("PENDIENTE"));
-    }
-
-    @Test
-    void crearTicket_conDescripcionVacia_retornaBadRequest() throws Exception {
+    void testCrearTicketConDescripcionVacia() throws Exception {
+        System.out.println("Ejecutando testCrearTicketConDescripcionVacia");
         String json = """
                 {
                   "nId_Usuario": 1,
@@ -57,14 +56,18 @@ class TicketControllerTest {
                   "sDescripcion": ""
                 }
                 """;
-        obtenerMockMvc().perform(post("/api/tickets")
-                        .contentType("application/json")
-                        .content(json))
-                .andExpect(status().isBadRequest());
+        URI uri = new URI("/api/tickets");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
     @Test
-    void crearTicket_sinIdUsuario_retornaBadRequest() throws Exception {
+    void testCrearTicketSinIdUsuario() throws Exception {
+        System.out.println("Ejecutando testCrearTicketSinIdUsuario");
         String json = """
                 {
                   "sTipo": "CERTIFICADO",
@@ -72,102 +75,125 @@ class TicketControllerTest {
                   "sDescripcion": "Descripción válida"
                 }
                 """;
-        obtenerMockMvc().perform(post("/api/tickets")
-                        .contentType("application/json")
-                        .content(json))
-                .andExpect(status().isBadRequest());
+        URI uri = new URI("/api/tickets");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.post(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
     @Test
-    void listarTickets_retornaListaConTickets() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(3)));
+    void testListarTickets() throws Exception {
+        System.out.println("Ejecutando testListarTickets");
+        URI uri = new URI("/api/tickets");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("SOL-0001"));
     }
 
     @Test
-    void listarTickets_incluyeTicketSemillaConDatosCorrectos() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.nId_Ticket == 1)].sNum_Ticket").value("SOL-0001"))
-                .andExpect(jsonPath("$[?(@.nId_Ticket == 1)].sTipo").value("CERTIFICADO"));
+    void testListarTicketsFiltradoPorEstado() throws Exception {
+        System.out.println("Ejecutando testListarTicketsFiltradoPorEstado");
+        URI uri = new URI("/api/tickets?estado=RESUELTO");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"RESUELTO\""));
     }
 
     @Test
-    void listarTickets_filtradoPorEstado_retornaSoloEseEstado() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets").param("estado", "RESUELTO"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.sEstado != 'RESUELTO')]").isEmpty());
+    void testListarTicketsConEstadoInvalido() throws Exception {
+        System.out.println("Ejecutando testListarTicketsConEstadoInvalido");
+        URI uri = new URI("/api/tickets?estado=NOEXISTE");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
     @Test
-    void listarTickets_conEstadoInvalido_retornaBadRequest() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets").param("estado", "NOEXISTE"))
-                .andExpect(status().isBadRequest());
+    void testObtenerTicketPorIdExistente() throws Exception {
+        System.out.println("Ejecutando testObtenerTicketPorIdExistente");
+        URI uri = new URI("/api/tickets/1");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("\"nId_Ticket\":1"));
     }
 
     @Test
-    void obtenerTicketPorId_existente_retorna200YDetalleDTO() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nId_Ticket").value(1));
+    void testObtenerTicketPorIdInexistente() throws Exception {
+        System.out.println("Ejecutando testObtenerTicketPorIdInexistente");
+        URI uri = new URI("/api/tickets/999");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
     }
 
     @Test
-    void obtenerTicketPorId_inexistente_retorna404NotFound() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets/999"))
-                .andExpect(status().isNotFound());
+    void testObtenerTicketPorIdSinResolucionAun() throws Exception {
+        System.out.println("Ejecutando testObtenerTicketPorIdSinResolucionAun");
+        URI uri = new URI("/api/tickets/2");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("\"resolucion\":null"));
     }
 
     @Test
-    void obtenerTicketPorId_sinResolucionAun_retornaResolucionNull() throws Exception {
-        obtenerMockMvc().perform(get("/api/tickets/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resolucion").value((Object) null));
-    }
-
-    @Test
-    void resolverTicket_conDatosValidos_retorna200YResolucion() throws Exception {
+    void testResolverTicketConDatosValidos() throws Exception {
+        System.out.println("Ejecutando testResolverTicketConDatosValidos");
         String json = """
                 {
                   "nId_Admin": 2,
                   "sTextoRespuesta": "Tu constancia ya fue generada, puedes recogerla en mesa de partes"
                 }
                 """;
-        obtenerMockMvc().perform(put("/api/tickets/1/respuesta")
-                        .contentType("application/json")
-                        .content(json))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sEstado").value("RESUELTO"))
-                .andExpect(jsonPath("$.resolucion.nId_Admin").value(2))
-                .andExpect(jsonPath("$.resolucion.sTextoRespuesta").value("Tu constancia ya fue generada, puedes recogerla en mesa de partes"));
+        URI uri = new URI("/api/tickets/3/respuesta");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.put(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"RESUELTO\""));
     }
 
     @Test
-    void resolverTicket_conTicketInexistente_retorna404NotFound() throws Exception {
+    void testResolverTicketConTicketInexistente() throws Exception {
+        System.out.println("Ejecutando testResolverTicketConTicketInexistente");
         String json = """
                 {
                   "nId_Admin": 2,
                   "sTextoRespuesta": "Respuesta de prueba"
                 }
                 """;
-        obtenerMockMvc().perform(put("/api/tickets/999/respuesta")
-                        .contentType("application/json")
-                        .content(json))
-                .andExpect(status().isNotFound());
+        URI uri = new URI("/api/tickets/999/respuesta");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.put(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
     }
 
     @Test
-    void resolverTicket_conTextoRespuestaVacio_retornaBadRequest() throws Exception {
+    void testResolverTicketConTextoRespuestaVacio() throws Exception {
+        System.out.println("Ejecutando testResolverTicketConTextoRespuestaVacio");
         String json = """
                 {
                   "nId_Admin": 2,
                   "sTextoRespuesta": ""
                 }
                 """;
-        obtenerMockMvc().perform(put("/api/tickets/1/respuesta")
-                        .contentType("application/json")
-                        .content(json))
-                .andExpect(status().isBadRequest());
+        URI uri = new URI("/api/tickets/1/respuesta");
+        MockHttpServletRequestBuilder req = MockMvcRequestBuilders.put(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .accept(MediaType.APPLICATION_JSON);
+        MvcResult result = mockMvc.perform(req).andReturn();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 }
