@@ -33,6 +33,7 @@ class UsuarioControllerTest {
             }
             """;
 
+    /* 1° Test: Listar usuarios */
     @Test
     void testListarUsuarios() throws Exception {
         System.out.println("Ejecutando testListarUsuarios");
@@ -43,6 +44,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("Ana Torres"));
     }
 
+    /* 2° Test: Listar usuarios filtrados por estado */
     @Test
     void testListarUsuariosFiltradoPorEstado() throws Exception {
         System.out.println("Ejecutando testListarUsuariosFiltradoPorEstado");
@@ -53,6 +55,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"INACTIVO\""));
     }
 
+    /* 3° Test: Listar usuarios con estado inválido */
     @Test
     void testListarUsuariosConEstadoInvalido() throws Exception {
         System.out.println("Ejecutando testListarUsuariosConEstadoInvalido");
@@ -62,6 +65,7 @@ class UsuarioControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 4° Test: Buscar usuario por nombre con coincidencia */
     @Test
     void testBuscarPorNombreConCoincidencia() throws Exception {
         System.out.println("Ejecutando testBuscarPorNombreConCoincidencia");
@@ -72,6 +76,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("Ana Torres"));
     }
 
+    /* 5° Test: Buscar usuario por nombre sin coincidencia */
     @Test
     void testBuscarPorNombreSinCoincidencia() throws Exception {
         System.out.println("Ejecutando testBuscarPorNombreSinCoincidencia");
@@ -82,6 +87,7 @@ class UsuarioControllerTest {
         assertEquals("[]", result.getResponse().getContentAsString());
     }
 
+    /* 6° Test: Buscar usuario por nombre de forma insensible a mayúsculas */
     @Test
     void testBuscarPorNombreEsInsensibleAMayusculas() throws Exception {
         System.out.println("Ejecutando testBuscarPorNombreEsInsensibleAMayusculas");
@@ -92,6 +98,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("Ana Torres"));
     }
 
+    /* 7° Test: Crear usuario con datos válidos */
     @Test
     void testCrearUsuarioConDatosValidos() throws Exception {
         System.out.println("Ejecutando testCrearUsuarioConDatosValidos");
@@ -105,6 +112,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"ACTIVO\""));
     }
 
+    /* 8° Test: Crear usuario con email inválido */
     @Test
     void testCrearUsuarioConEmailInvalido() throws Exception {
         System.out.println("Ejecutando testCrearUsuarioConEmailInvalido");
@@ -126,6 +134,7 @@ class UsuarioControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 9° Test: Crear usuario con rol inválido */
     @Test
     void testCrearUsuarioConRolInvalido() throws Exception {
         System.out.println("Ejecutando testCrearUsuarioConRolInvalido");
@@ -147,6 +156,7 @@ class UsuarioControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 10° Test: Actualizar usuario con datos válidos */
     @Test
     void testActualizarUsuarioConDatosValidos() throws Exception {
         System.out.println("Ejecutando testActualizarUsuarioConDatosValidos");
@@ -167,6 +177,7 @@ class UsuarioControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("Luis Ramírez Paredes"));
     }
 
+    /* 11° Test: Actualizar usuario inexistente */
     @Test
     void testActualizarUsuarioInexistente() throws Exception {
         System.out.println("Ejecutando testActualizarUsuarioInexistente");
@@ -186,6 +197,7 @@ class UsuarioControllerTest {
         assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
     }
 
+    /* 12° Test: Actualizar usuario con estado inválido */
     @Test
     void testActualizarUsuarioConEstadoInvalido() throws Exception {
         System.out.println("Ejecutando testActualizarUsuarioConEstadoInvalido");

@@ -28,12 +28,14 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
+    /* 1° Rest: Crear Ticket */
     @PostMapping
     public ResponseEntity<TicketDTO> crearTicket(@Valid @RequestBody TicketCreateDTO datos) {
         TicketDTO ticketCreado = ticketService.crearTicket(datos);
         return ResponseEntity.status(HttpStatus.CREATED).body(ticketCreado);
     }
 
+    /* 2° Rest: Listar Tickets */
     @GetMapping
     public ResponseEntity<List<TicketDTO>> listarTickets(
             @RequestParam(name = "estado", required = false) String estado,
@@ -42,12 +44,14 @@ public class TicketController {
         return ResponseEntity.ok(lista);
     }
 
+    /* 3° Rest: Obtener Ticket por ID */
     @GetMapping("/{id}")
     public ResponseEntity<TicketDetalleDTO> obtenerTicketPorId(@PathVariable("id") Long id) {
         TicketDetalleDTO ticket = ticketService.obtenerTicketPorId(id);
         return ResponseEntity.ok(ticket);
     }
 
+    /* 4° Rest: Resolver Ticket */
     @PutMapping("/{id}/respuesta")
     public ResponseEntity<TicketDetalleDTO> resolverTicket(
             @PathVariable("id") Long id,

@@ -32,6 +32,7 @@ class TicketControllerTest {
             }
             """;
 
+    /* 1° Test: Crear Ticket con datos válidos */
     @Test
     void testCrearTicketConDatosValidos() throws Exception {
         System.out.println("Ejecutando testCrearTicketConDatosValidos");
@@ -45,6 +46,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"PENDIENTE\""));
     }
 
+    /* 2° Test: Crear ticket con descripción vacía */
     @Test
     void testCrearTicketConDescripcionVacia() throws Exception {
         System.out.println("Ejecutando testCrearTicketConDescripcionVacia");
@@ -65,6 +67,7 @@ class TicketControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 3° Test: Crear ticket sin ID de usuario */
     @Test
     void testCrearTicketSinIdUsuario() throws Exception {
         System.out.println("Ejecutando testCrearTicketSinIdUsuario");
@@ -84,6 +87,7 @@ class TicketControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 4° Test: Listar tickets */
     @Test
     void testListarTickets() throws Exception {
         System.out.println("Ejecutando testListarTickets");
@@ -94,6 +98,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("SOL-0001"));
     }
 
+    /* 5° Test: Listar tickets filtrados por estado */
     @Test
     void testListarTicketsFiltradoPorEstado() throws Exception {
         System.out.println("Ejecutando testListarTicketsFiltradoPorEstado");
@@ -104,6 +109,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"RESUELTO\""));
     }
 
+    /* 6° Test: Listar tickets con estado inválido */
     @Test
     void testListarTicketsConEstadoInvalido() throws Exception {
         System.out.println("Ejecutando testListarTicketsConEstadoInvalido");
@@ -113,6 +119,7 @@ class TicketControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
     }
 
+    /* 7° Test: Obtener ticket por ID existente */
     @Test
     void testObtenerTicketPorIdExistente() throws Exception {
         System.out.println("Ejecutando testObtenerTicketPorIdExistente");
@@ -123,6 +130,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"nId_Ticket\":1"));
     }
 
+    /* 8° Test: Obtener ticket por ID inexistente */
     @Test
     void testObtenerTicketPorIdInexistente() throws Exception {
         System.out.println("Ejecutando testObtenerTicketPorIdInexistente");
@@ -132,6 +140,7 @@ class TicketControllerTest {
         assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
     }
 
+    /* 9° Test: Obtener ticket por ID sin resolución */
     @Test
     void testObtenerTicketPorIdSinResolucionAun() throws Exception {
         System.out.println("Ejecutando testObtenerTicketPorIdSinResolucionAun");
@@ -142,6 +151,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"resolucion\":null"));
     }
 
+    /* 10° Test: Resolver ticket con datos válidos */
     @Test
     void testResolverTicketConDatosValidos() throws Exception {
         System.out.println("Ejecutando testResolverTicketConDatosValidos");
@@ -161,6 +171,7 @@ class TicketControllerTest {
         assertTrue(result.getResponse().getContentAsString().contains("\"sEstado\":\"RESUELTO\""));
     }
 
+    /* 11° Test: Resolver ticket con ticket inexistente */
     @Test
     void testResolverTicketConTicketInexistente() throws Exception {
         System.out.println("Ejecutando testResolverTicketConTicketInexistente");
@@ -179,6 +190,7 @@ class TicketControllerTest {
         assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
     }
 
+    /* 12° Test: Resolver ticket con texto de respuesta vacío */
     @Test
     void testResolverTicketConTextoRespuestaVacio() throws Exception {
         System.out.println("Ejecutando testResolverTicketConTextoRespuestaVacio");

@@ -27,6 +27,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
+    /* 1° Rest: Listar Usuarios */
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> listarUsuarios(
             @RequestParam(name = "estado", required = false) String estado) {
@@ -34,6 +35,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
+    /* 2° Rest: Buscar Usuario por Nombre */
     @GetMapping("/buscar")
     public ResponseEntity<List<UsuarioDTO>> buscarPorNombre(
             @RequestParam String nombre) {
@@ -41,12 +43,14 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
+    /* 3° Rest: Crear Usuario */
     @PostMapping
     public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody UsuarioCreateDTO datos) {
         UsuarioDTO usuarioCreado = usuarioService.crearUsuario(datos);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
     }
 
+    /* 4° Rest: Actualizar Usuario */
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioDTO> actualizarUsuario(
             @PathVariable("id") Long id,
