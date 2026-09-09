@@ -10,6 +10,8 @@ import java.util.Map;
 
 @Service
 public class UsuarioService {
+    private static final List<String> ESTADOS_VALIDOS = List.of("ACTIVO", "INACTIVO");
+
     private final Map<Long, Usuario> usuariosPorId = Map.of(
             1L, new Usuario(1L, "Ana Torres", "ana.torres@utp.edu.pe", "70011122",
                     "987654321", null, "ESTANDAR", "ACTIVO", LocalDateTime.now()),
@@ -19,8 +21,12 @@ public class UsuarioService {
                     "987654323", null, "ESTANDAR", "INACTIVO", LocalDateTime.now())
     );
 
-    public List<UsuarioDTO> listarUsuarios() {
+    public List<UsuarioDTO> listarUsuarios(String estado) {
+        if (estado != null && !ESTADOS_VALIDOS.contains(estado.toUpperCase())) {
+            throw new IllegalArgumentException("Estado no válido: " + estado);
+        }
         return usuariosPorId.values().stream()
+                .filter(u -> estado == null || u.getSEstado().equalsIgnoreCase(estado))
                 .map(this::mapearADTO)
                 .toList();
     }

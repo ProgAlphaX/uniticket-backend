@@ -20,8 +20,9 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioDTO>> listarUsuarios() {
-        List<UsuarioDTO> usuarios = usuarioService.listarUsuarios();
+    public ResponseEntity<List<UsuarioDTO>> listarUsuarios(
+            @RequestParam(name = "estado", required = false) String estado) {
+        List<UsuarioDTO> usuarios = usuarioService.listarUsuarios(estado);
         return ResponseEntity.ok(usuarios);
     }
 
