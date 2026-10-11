@@ -1,7 +1,12 @@
 package pe.edu.utp.uniticket_backend.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,27 +15,28 @@ public class Ticket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "nid_ticket")
     private Long nId_Ticket;
 
-    @Column(name = "snum_ticket", length = 50)
+    @Column(name = "snum_ticket", unique = true, length = 20)
     private String sNum_Ticket;
 
-    @Column(name = "nid_usuario")
+    @Column(name = "nid_usuario", nullable = false)
     private Long nId_Usuario;
 
-    @Column(name = "stipo", length = 50)
+    @Column(name = "stipo", nullable = false, length = 20)
     private String sTipo;
 
-    @Column(name = "sasunto", length = 150)
+    @Column(name = "sasunto", nullable = false, length = 150)
     private String sAsunto;
 
-    @Column(name = "sdescripcion", columnDefinition = "TEXT")
+    @Column(name = "sdescripcion", nullable = false, length = 1000)
     private String sDescripcion;
 
-    @Column(name = "sestado", length = 50)
+    @Column(name = "sestado", nullable = false, length = 20)
     private String sEstado;
 
-    @Column(name = "dfecha_creacion")
+    @Column(name = "dfecha_creacion", nullable = false)
     private LocalDateTime dFecha_Creacion;
 
     public Ticket() {
