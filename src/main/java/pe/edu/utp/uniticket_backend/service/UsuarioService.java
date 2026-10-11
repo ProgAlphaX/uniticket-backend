@@ -1,17 +1,16 @@
 package pe.edu.utp.uniticket_backend.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pe.edu.utp.uniticket_backend.dto.UsuarioCreateDTO;
 import pe.edu.utp.uniticket_backend.dto.UsuarioDTO;
 import pe.edu.utp.uniticket_backend.dto.UsuarioUpdateDTO;
 import pe.edu.utp.uniticket_backend.exception.ResourceNotFoundException;
 import pe.edu.utp.uniticket_backend.model.Usuario;
+import pe.edu.utp.uniticket_backend.repository.UsuarioRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class UsuarioService {
@@ -19,30 +18,27 @@ public class UsuarioService {
     private static final List<String> ROLES_VALIDOS = List.of("ADMIN", "ESTANDAR");
     private static final String ESTADO_ACTIVO = "ACTIVO";
 
-    private final Map<Long, Usuario> usuariosPorId = new ConcurrentHashMap<>(Map.of(
-            1L, new Usuario(1L, "Ana Torres", "ana.torres@utp.edu.pe", "70011122",
-                    "987654321", null, "ESTANDAR", "ACTIVO", LocalDateTime.now()),
-            2L, new Usuario(2L, "Luis Ramírez", "luis.ramirez@utp.edu.pe", "70033445",
-                    "987654322", null, "ADMIN", "ACTIVO", LocalDateTime.now()),
-            3L, new Usuario(3L, "Selia Quispe", "selia.quispe@utp.edu.pe", "70055667",
-                    "987654323", null, "ESTANDAR", "INACTIVO", LocalDateTime.now())
-    ));
-    private final AtomicLong secuenciaId = new AtomicLong(3);
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public List<UsuarioDTO> listarUsuarios(String estado) {
         if (estado != null && !ESTADOS_VALIDOS.contains(estado.toUpperCase())) {
             throw new IllegalArgumentException("Estado no válido: " + estado);
         }
-        return usuariosPorId.values().stream()
-                .filter(u -> estado == null || u.getSEstado().equalsIgnoreCase(estado))
-                .map(this::mapearADTO)
-                .toList();
+        List<Usuario> usuarios = estado == null ? usuarioRepository.findAll()
+                : usuarioRepository.findBysEstado(estado.toUpperCase());
+        return usuarios.stream().map(this::mapearADTO).toList();
     }
 
     public List<UsuarioDTO> buscarPorNombre(String nombre) {
-        return usuariosPorId.values().stream()
-                .filter(u -> u.getSNombreCompleto() != null
-                        && u.getSNombreCompleto().toLowerCase().contains(nombre.toLowerCase()))
+        return usuarioRepository
+                .findBysNombreCompletoContainingIgnoreCase(nombre)
+                .stream()
                 .map(this::mapearADTO)
                 .toList();
     }
@@ -52,28 +48,24 @@ public class UsuarioService {
             throw new IllegalArgumentException("Rol no válido: " + datos.sRol());
         }
 
-        long nId_Usuario = secuenciaId.incrementAndGet();
         Usuario usuario = new Usuario(
-                nId_Usuario,
+                null,
                 datos.sNombreCompleto(),
                 datos.sEmail(),
                 datos.sDni(),
                 datos.sTelefono(),
-                null,
+                passwordEncoder.encode(datos.sPassword()),
                 datos.sRol().toUpperCase(),
                 ESTADO_ACTIVO,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
-        usuariosPorId.put(nId_Usuario, usuario);
-        return mapearADTO(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        return mapearADTO(usuarioGuardado);
     }
 
     public UsuarioDTO actualizarUsuario(Long id, UsuarioUpdateDTO datos) {
-        Usuario usuario = usuariosPorId.get(id);
-        if (usuario == null) {
-            throw new ResourceNotFoundException("Usuario no encontrado con ID: " + id);
-        }
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
 
         if (!ESTADOS_VALIDOS.contains(datos.sEstado().toUpperCase())) {
             throw new IllegalArgumentException("Estado no válido: " + datos.sEstado());
@@ -83,7 +75,8 @@ public class UsuarioService {
         usuario.setSEmail(datos.sEmail());
         usuario.setSEstado(datos.sEstado().toUpperCase());
 
-        return mapearADTO(usuario);
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return mapearADTO(usuarioActualizado);
     }
 
     private UsuarioDTO mapearADTO(Usuario usuario) {
@@ -94,7 +87,6 @@ public class UsuarioService {
                 usuario.getSDni(),
                 usuario.getSTelefono(),
                 usuario.getSRol(),
-                usuario.getSEstado()
-        );
+                usuario.getSEstado());
     }
 }

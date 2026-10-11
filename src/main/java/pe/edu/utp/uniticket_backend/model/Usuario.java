@@ -2,15 +2,45 @@ package pe.edu.utp.uniticket_backend.model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "usuario")
+
 public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
+    
+    @Column (name = "id_usuario")
     private Long nId_Usuario;
+
+    @Column(name = "sombre_completo", length = 100)
     private String sNombreCompleto;
+
+    @Column(name = "semail", length = 100, unique = true)
     private String sEmail;
+
+    @Column(name = "sdni", length = 20)
     private String sDni;
+
+    @Column(name = "stelefono", length = 20)
     private String sTelefono;
+
+    @Column(name = "spassword_hash", length = 255)
     private String sPasswordHash;
+
+    @Column(name = "srol", length = 50)
     private String sRol;
+
+    @Column(name = "sestado", length = 50)
     private String sEstado;
+
+    @Column(name = "dfecha_creacion")
     private LocalDateTime dFecha_Creacion;
 
     public Usuario() {
@@ -62,7 +92,9 @@ public class Usuario {
         this.sDni = sDni;
     }
 
-    public String getSTelefono() { return sTelefono; }
+    public String getSTelefono() {
+        return sTelefono;
+    }
 
     public void setSTelefono(String sTelefono) {
         this.sTelefono = sTelefono;
@@ -99,4 +131,9 @@ public class Usuario {
     public void setDFecha_Creacion(LocalDateTime dFecha_Creacion) {
         this.dFecha_Creacion = dFecha_Creacion;
     }
+
+	public Usuario orElseThrow(Object object) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+	}
 }

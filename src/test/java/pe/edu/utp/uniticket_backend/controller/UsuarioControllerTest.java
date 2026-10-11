@@ -29,7 +29,8 @@ class UsuarioControllerTest {
               "sEmail": "jorge.vidal@utp.edu.pe",
               "sDni": "70099887",
               "sTelefono": "987000111",
-              "sRol": "ESTANDAR"
+              "sRol": "ESTANDAR",
+              "sPassword" : "Clave1234"
             }
             """;
 
@@ -122,7 +123,8 @@ class UsuarioControllerTest {
                   "sEmail": "no-es-un-email",
                   "sDni": "70099887",
                   "sTelefono": "987000111",
-                  "sRol": "ESTANDAR"
+                  "sRol": "ESTANDAR",
+                  "sPassword" : "Clave1234"
                 }
                 """;
         URI uri = new URI("/api/usuarios");
@@ -144,7 +146,8 @@ class UsuarioControllerTest {
                   "sEmail": "jorge.vidal@utp.edu.pe",
                   "sDni": "70099887",
                   "sTelefono": "987000111",
-                  "sRol": "SUPERADMIN"
+                  "sRol": "SUPERADMIN",
+                  "sPassword" : "Clave1234"
                 }
                 """;
         URI uri = new URI("/api/usuarios");
