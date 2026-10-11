@@ -30,15 +30,16 @@ public class UsuarioService {
         if (estado != null && !ESTADOS_VALIDOS.contains(estado.toUpperCase())) {
             throw new IllegalArgumentException("Estado no válido: " + estado);
         }
-        List<Usuario> usuarios = estado == null ? usuarioRepository.findAll()
+        List<Usuario> usuarios = estado == null
+                ? usuarioRepository.findAll()
                 : usuarioRepository.findBysEstado(estado.toUpperCase());
-        return usuarios.stream().map(this::mapearADTO).toList();
+        return usuarios.stream()
+                .map(this::mapearADTO)
+                .toList();
     }
 
     public List<UsuarioDTO> buscarPorNombre(String nombre) {
-        return usuarioRepository
-                .findBysNombreCompletoContainingIgnoreCase(nombre)
-                .stream()
+        return usuarioRepository.findBysNombreCompletoContainingIgnoreCase(nombre).stream()
                 .map(this::mapearADTO)
                 .toList();
     }
@@ -46,6 +47,9 @@ public class UsuarioService {
     public UsuarioDTO crearUsuario(UsuarioCreateDTO datos) {
         if (!ROLES_VALIDOS.contains(datos.sRol().toUpperCase())) {
             throw new IllegalArgumentException("Rol no válido: " + datos.sRol());
+        }
+        if (usuarioRepository.findBysEmail(datos.sEmail()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe un usuario con el email: " + datos.sEmail());
         }
 
         Usuario usuario = new Usuario(
@@ -57,10 +61,11 @@ public class UsuarioService {
                 passwordEncoder.encode(datos.sPassword()),
                 datos.sRol().toUpperCase(),
                 ESTADO_ACTIVO,
-                LocalDateTime.now());
+                LocalDateTime.now()
+        );
 
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
-        return mapearADTO(usuarioGuardado);
+        Usuario guardado = usuarioRepository.save(usuario);
+        return mapearADTO(guardado);
     }
 
     public UsuarioDTO actualizarUsuario(Long id, UsuarioUpdateDTO datos) {
@@ -75,8 +80,8 @@ public class UsuarioService {
         usuario.setSEmail(datos.sEmail());
         usuario.setSEstado(datos.sEstado().toUpperCase());
 
-        Usuario usuarioActualizado = usuarioRepository.save(usuario);
-        return mapearADTO(usuarioActualizado);
+        Usuario actualizado = usuarioRepository.save(usuario);
+        return mapearADTO(actualizado);
     }
 
     private UsuarioDTO mapearADTO(Usuario usuario) {
@@ -87,6 +92,7 @@ public class UsuarioService {
                 usuario.getSDni(),
                 usuario.getSTelefono(),
                 usuario.getSRol(),
-                usuario.getSEstado());
+                usuario.getSEstado()
+        );
     }
 }
