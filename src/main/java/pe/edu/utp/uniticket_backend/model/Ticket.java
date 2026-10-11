@@ -1,15 +1,36 @@
 package pe.edu.utp.uniticket_backend.model;
 
+
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "ticket")
 public class Ticket {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long nId_Ticket;
+
+    @Column(name = "snum_ticket", length = 50)
     private String sNum_Ticket;
+
+    @Column(name = "nid_usuario")
     private Long nId_Usuario;
+
+    @Column(name = "stipo", length = 50)
     private String sTipo;
+
+    @Column(name = "sasunto", length = 150)
     private String sAsunto;
+
+    @Column(name = "sdescripcion", columnDefinition = "TEXT")
     private String sDescripcion;
+
+    @Column(name = "sestado", length = 50)
     private String sEstado;
+
+    @Column(name = "dfecha_creacion")
     private LocalDateTime dFecha_Creacion;
 
     public Ticket() {

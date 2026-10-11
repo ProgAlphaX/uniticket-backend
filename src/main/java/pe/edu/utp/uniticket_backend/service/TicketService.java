@@ -4,20 +4,17 @@ import org.springframework.stereotype.Service;
 import pe.edu.utp.uniticket_backend.dto.TicketCreateDTO;
 import pe.edu.utp.uniticket_backend.dto.TicketDTO;
 import pe.edu.utp.uniticket_backend.dto.TicketDetalleDTO;
-import pe.edu.utp.uniticket_backend.dto.TicketUpdateDTO;
 import pe.edu.utp.uniticket_backend.exception.ResourceNotFoundException;
 import pe.edu.utp.uniticket_backend.model.Ticket;
+import pe.edu.utp.uniticket_backend.repository.TicketRepository;
+import pe.edu.utp.uniticket_backend.repository.UsuarioRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class TicketService {
     private static final String ESTADO_PENDIENTE = "PENDIENTE";
-    private static final String ESTADO_RESUELTO = "RESUELTO";
 
     private static final List<String> ESTADOS_VALIDOS =
             List.of("PENDIENTE", "EN_PROCESO", "RESUELTO", "CANCELADO");
@@ -25,40 +22,39 @@ public class TicketService {
     private static final List<String> TIPOS_VALIDOS =
             List.of("CERTIFICADO", "CITA_TUTOR", "PENSION", "DOCUMENTOS");
 
-    private final Map<Long, Ticket> ticketsPorId = new ConcurrentHashMap<>(Map.of(
-            1L, new Ticket(1L, "SOL-0001", 1L, "CERTIFICADO", "Constancia de matrícula",
-                    "Necesito la constancia para un trámite bancario", "PENDIENTE", LocalDateTime.now()),
-            2L, new Ticket(2L, "SOL-0002", 2L, "CITA_TUTOR", "Cita con tutor de ciclo",
-                    "Quisiera coordinar una cita para revisar mi avance académico", "EN_PROCESO", LocalDateTime.now()),
-            3L, new Ticket(3L, "SOL-0003", 3L, "PENSION", "Consulta de pensión",
-                    "Necesito el detalle de mi pensión del ciclo actual", "RESUELTO", LocalDateTime.now())
-    ));
-    private final AtomicLong secuenciaId = new AtomicLong(3);
-    private final AtomicLong secuenciaNumTicket = new AtomicLong(3);
+    private final TicketRepository ticketRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    private final Map<Long, TicketDetalleDTO.ResolucionDTO> resolucionesPorTicket = new ConcurrentHashMap<>();
-    private final AtomicLong secuenciaResolucion = new AtomicLong(0);
-
-    public TicketDTO crearTicket(TicketCreateDTO datos) {
-        long nId_Ticket = secuenciaId.incrementAndGet();
-        String sNum_Ticket = generarNumTicket();
-        Ticket ticket = new Ticket(
-                nId_Ticket,
-                sNum_Ticket,
-                datos.nId_Usuario(),
-                datos.sTipo(),
-                datos.sAsunto(),
-                datos.sDescripcion(),
-                ESTADO_PENDIENTE,
-                LocalDateTime.now()
-        );
-        ticketsPorId.put(nId_Ticket, ticket);
-        return mapearADTO(ticket);
+    public TicketService(TicketRepository ticketRepository, UsuarioRepository usuarioRepository) {
+        this.ticketRepository = ticketRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    private String generarNumTicket() {
-        long correlativo = secuenciaNumTicket.incrementAndGet();
-        return String.format("SOL-%04d", correlativo);
+    public TicketDTO crearTicket(TicketCreateDTO datos) {
+        // Verificar que el usuario exista en la BD
+        if (!usuarioRepository.existsById(datos.nId_Usuario())) {
+            throw new ResourceNotFoundException("Usuario no encontrado con ID: " + datos.nId_Usuario());
+        }
+
+        Ticket ticket = new Ticket();
+        ticket.setNId_Usuario(datos.nId_Usuario());
+        ticket.setSTipo(datos.sTipo());
+        ticket.setSAsunto(datos.sAsunto());
+        ticket.setSDescripcion(datos.sDescripcion());
+        ticket.setSEstado(ESTADO_PENDIENTE);
+        ticket.setDFecha_Creacion(LocalDateTime.now());
+
+        // Guardar primero para generar el ID en la BD
+        Ticket ticketGuardado = ticketRepository.save(ticket);
+
+        // Generar el código SOL-000X usando el ID real de la base de datos
+        String sNum_Ticket = String.format("SOL-%04d", ticketGuardado.getNId_Ticket());
+        ticketGuardado.setSNum_Ticket(sNum_Ticket);
+        
+        // Actualizar con el número de ticket definitivo
+        ticketGuardado = ticketRepository.save(ticketGuardado);
+
+        return mapearADTO(ticketGuardado);
     }
 
     private TicketDTO mapearADTO(Ticket ticket) {
@@ -81,7 +77,7 @@ public class TicketService {
         if (tipo != null && !TIPOS_VALIDOS.contains(tipo.toUpperCase())) {
             throw new IllegalArgumentException("Tipo de ticket no válido: " + tipo);
         }
-        return ticketsPorId.values().stream()
+        return ticketRepository.findAll().stream()
                 .filter(t -> estado == null || t.getSEstado().equalsIgnoreCase(estado))
                 .filter(t -> tipo == null || t.getSTipo().equalsIgnoreCase(tipo))
                 .map(this::mapearADTO)
@@ -89,42 +85,11 @@ public class TicketService {
     }
 
     public TicketDetalleDTO obtenerTicketPorId(Long id) {
-        Ticket ticket = ticketsPorId.get(id);
-        if (ticket == null) {
-            throw new ResourceNotFoundException("Ticket no encontrado con ID: " + id);
-        }
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket no encontrado con ID: " + id));
 
-        TicketDetalleDTO.ResolucionDTO resolucion = resolucionesPorTicket.get(id);
-
-        return new TicketDetalleDTO(
-                ticket.getNId_Ticket(),
-                ticket.getSNum_Ticket(),
-                ticket.getNId_Usuario(),
-                ticket.getSTipo(),
-                ticket.getSAsunto(),
-                ticket.getSDescripcion(),
-                ticket.getSEstado(),
-                ticket.getDFecha_Creacion(),
-                resolucion
-        );
-    }
-
-    public TicketDetalleDTO resolverTicket(Long id, TicketUpdateDTO datos) {
-        Ticket ticket = ticketsPorId.get(id);
-        if (ticket == null) {
-            throw new ResourceNotFoundException("Ticket no encontrado con ID: " + id);
-        }
-
-        ticket.setSEstado(ESTADO_RESUELTO);
-
-        TicketDetalleDTO.ResolucionDTO resolucion = new TicketDetalleDTO.ResolucionDTO(
-                secuenciaResolucion.incrementAndGet(),
-                datos.nId_Admin(),
-                datos.sTextoRespuesta(),
-                LocalDateTime.now()
-        );
-
-        resolucionesPorTicket.put(id, resolucion);
+        // La resolución se integrará con la entidad de Alexander próximamente
+        TicketDetalleDTO.ResolucionDTO resolucion = null;
 
         return new TicketDetalleDTO(
                 ticket.getNId_Ticket(),
