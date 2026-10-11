@@ -1,46 +1,43 @@
 package pe.edu.utp.uniticket_backend.model;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuario")
-
 public class Usuario {
-
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    
-    @Column (name = "id_usuario")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "nid_usuario")
     private Long nId_Usuario;
 
-    @Column(name = "sombre_completo", length = 100)
+    @Column(name = "snombrecompleto", nullable = false, length = 150)
     private String sNombreCompleto;
 
-    @Column(name = "semail", length = 100, unique = true)
+    @Column(name = "semail", nullable = false, unique = true, length = 100)
     private String sEmail;
 
-    @Column(name = "sdni", length = 20)
+    @Column(name = "sdni", nullable = false, length = 8)
     private String sDni;
 
-    @Column(name = "stelefono", length = 20)
+    @Column(name = "stelefono", length = 15)
     private String sTelefono;
 
-    @Column(name = "spassword_hash", length = 255)
+    @Column(name = "spasswordhash", nullable = false, length = 255)
     private String sPasswordHash;
 
-    @Column(name = "srol", length = 50)
+    @Column(name = "srol", nullable = false, length = 20)
     private String sRol;
 
-    @Column(name = "sestado", length = 50)
+    @Column(name = "sestado", nullable = false, length = 20)
     private String sEstado;
 
-    @Column(name = "dfecha_creacion")
+    @Column(name = "dfecha_creacion", nullable = false)
     private LocalDateTime dFecha_Creacion;
 
     public Usuario() {
@@ -131,9 +128,4 @@ public class Usuario {
     public void setDFecha_Creacion(LocalDateTime dFecha_Creacion) {
         this.dFecha_Creacion = dFecha_Creacion;
     }
-
-	public Usuario orElseThrow(Object object) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
-	}
 }

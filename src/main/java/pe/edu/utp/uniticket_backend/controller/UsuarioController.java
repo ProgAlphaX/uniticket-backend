@@ -15,7 +15,6 @@ import pe.edu.utp.uniticket_backend.dto.UsuarioCreateDTO;
 import pe.edu.utp.uniticket_backend.dto.UsuarioDTO;
 import pe.edu.utp.uniticket_backend.dto.UsuarioUpdateDTO;
 import pe.edu.utp.uniticket_backend.service.UsuarioService;
-import pe.edu.utp.uniticket_backend.repository.UsuarioRepository;
 
 import java.util.List;
 
@@ -23,11 +22,9 @@ import java.util.List;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
-    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioController(UsuarioService usuarioService, UsuarioRepository usuarioRepository) {
+    public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
-        this.usuarioRepository = usuarioRepository;
     }
 
     /* 1° Rest: Listar Usuarios */
@@ -50,9 +47,6 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody UsuarioCreateDTO datos) {
         UsuarioDTO usuarioCreado = usuarioService.crearUsuario(datos);
-        if (usuarioRepository.existsBysEmail(datos.sEmail())) {
-            throw new IllegalArgumentException("Ya existe un usuario con ese correo.");
-        }
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
     }
 
