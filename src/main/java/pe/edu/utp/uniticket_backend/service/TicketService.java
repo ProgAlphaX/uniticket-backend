@@ -107,10 +107,10 @@ public class TicketService {
 
     public List<TicketDTO> listarTickets(String estado, String tipo) {
         if (estado != null && !ESTADOS_VALIDOS.contains(estado.toUpperCase())) {
-            throw new IllegalArgumentException("Estado no válido: " + estado);
+            throw new IllegalArgumentException("Estado no vÃ¡lido: " + estado);
         }
         if (tipo != null && !TIPOS_VALIDOS.contains(tipo.toUpperCase())) {
-            throw new IllegalArgumentException("Tipo de ticket no válido: " + tipo);
+            throw new IllegalArgumentException("Tipo de ticket no vÃ¡lido: " + tipo);
         }
         return ticketRepository.findAll().stream()
                 .filter(t -> estado == null || t.getSEstado().equalsIgnoreCase(estado))
@@ -147,7 +147,7 @@ public class TicketService {
         Resolucion resolucion = resolucionRepository.findByTicket(ticket).orElse(new Resolucion());
         resolucion.setTicket(ticket);
         resolucion.setNId_Admin(datos.nId_Admin());
-        resolucion.setSTexto_Respuesta(datos.sTexto_Respuesta());
+        resolucion.setSTexto_Respuesta(datos.sTextoRespuesta());
         resolucion.setDFecha_Respuesta(LocalDateTime.now());
         Resolucion guardada = resolucionRepository.save(resolucion);
 
