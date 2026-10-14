@@ -9,7 +9,7 @@ public record TicketUpdateDTO(
         Long nId_Admin,
 
         @NotBlank(message = "La respuesta es obligatoria")
-        String sTextoRespuesta
+        String sTexto_Respuesta
 
 ) {
 }

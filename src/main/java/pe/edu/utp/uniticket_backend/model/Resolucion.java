@@ -14,14 +14,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "resolucion")
 public class Resolucion {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "nid_resolucion")
     private Long nId_Resolucion;
 
     @OneToOne
-    @JoinColumn(name = "n_id_ticket", nullable = false, unique = true)
+    @JoinColumn(name = "nid_ticket", nullable = false, unique = true)
     private Ticket ticket;
 
     @Column(name = "nid_admin", nullable = false)
@@ -36,8 +35,8 @@ public class Resolucion {
     public Resolucion() {
     }
 
-    public Resolucion(Long nId_Resolucion, Ticket ticket, Long nId_Admin,
-                     String sTexto_Respuesta, LocalDateTime dFecha_Respuesta) {
+    public Resolucion(Long nId_Resolucion, Ticket ticket, Long nId_Admin, String sTexto_Respuesta,
+                      LocalDateTime dFecha_Respuesta) {
         this.nId_Resolucion = nId_Resolucion;
         this.ticket = ticket;
         this.nId_Admin = nId_Admin;

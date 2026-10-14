@@ -16,7 +16,7 @@ public record TicketDetalleDTO(
     public record ResolucionDTO(
             Long nId_Resolucion,
             Long nId_Admin,
-            String sTextoRespuesta,
-            LocalDateTime dFechaRespuesta
+            String sTexto_Respuesta,
+            LocalDateTime dFecha_Respuesta
     ) {}
 }
